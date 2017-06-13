@@ -8,6 +8,7 @@
     <engines>
         <engine name="cordova" version=">=3.0.0" />
     </engines>
+    <dependency id="cordova-plugin-compat" version="^1.0.0" />
 
     <description>This plugin allows you to save the contents of an HTML canvas tag to the iOS Photo Library, or Android Gallery from your app.</description>
     <author>Tommy-Carlos Williams - tommy@devgeeks.org</author>
