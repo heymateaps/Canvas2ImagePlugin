@@ -70,6 +70,7 @@ public class Canvas2ImagePlugin extends CordovaPlugin {
         } else {
         	Log.d("SaveImage", "Requesting permissions for WRITE_EXTERNAL_STORAGE");
         	PermissionHelper.requestPermission(this, WRITE_PERM_REQUEST_CODE, WRITE_EXTERNAL_STORAGE);
+			//savePhoto(bmp, fileName, callbackContext);
         }
 	}
 
