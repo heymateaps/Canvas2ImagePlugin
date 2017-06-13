@@ -73,7 +73,7 @@ public class Canvas2ImagePlugin extends CordovaPlugin {
         }
 	}
 
-	private void performSavePhoto(Bitmap bmp, String fileName) {
+	private void performSavePhoto(Bitmap bmp, String fileName, CallbackContext callbackContext) {
 		try {
 			String deviceVersion = Build.VERSION.RELEASE;
 			Log.i("Canvas2ImagePlugin", "Android version " + deviceVersion);
