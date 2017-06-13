@@ -6,6 +6,7 @@ import java.util.Calendar;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
+import org.apache.cordova.PermissionHelper;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -40,7 +41,7 @@ public class Canvas2ImagePlugin extends CordovaPlugin {
 			String base64 = data.optString(0);
 			if (base64.equals("")) // isEmpty() requires API level 9
 				callbackContext.error("Missing base64 string");
-			
+
 			// Create the bitmap from the base64 string
 			Log.d("Canvas2ImagePlugin", base64);
 			byte[] decodedString = Base64.decode(base64, Base64.DEFAULT);
@@ -48,18 +49,18 @@ public class Canvas2ImagePlugin extends CordovaPlugin {
 			if (bmp == null) {
 				callbackContext.error("The image could not be decoded");
 			} else {
-				
+
 				// Save the image
 				File imageFile = savePhoto(bmp);
 				if (imageFile == null)
 					callbackContext.error("Error while saving image");
-				
+
 				// Update image gallery
 				scanPhoto(imageFile);
-				
+
 				callbackContext.success(imageFile.toString());
 			}
-			
+
 			return true;
 		} else {
 			return false;
@@ -67,8 +68,19 @@ public class Canvas2ImagePlugin extends CordovaPlugin {
 	}
 
 	private File savePhoto(Bitmap bmp) {
+		if (PermissionHelper.hasPermission(this, WRITE_EXTERNAL_STORAGE)) {
+        	Log.d("SaveImage", "Permissions already granted, or Android version is lower than 6");
+        	performSavePhoto(bmp);
+        } else {
+        	Log.d("SaveImage", "Requesting permissions for WRITE_EXTERNAL_STORAGE");
+        	PermissionHelper.requestPermission(this, WRITE_PERM_REQUEST_CODE, WRITE_EXTERNAL_STORAGE);
+        }
+	}
+
+	private File performSavePhoto(Bitmap bmp) {
+
 		File retVal = null;
-		
+
 		try {
 			Calendar c = Calendar.getInstance();
 			String date = "" + c.get(Calendar.DAY_OF_MONTH)
@@ -91,14 +103,14 @@ public class Canvas2ImagePlugin extends CordovaPlugin {
 			if (check >= 1) {
 				folder = Environment
 					.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
-				
+
 				if(!folder.exists()) {
 					folder.mkdirs();
 				}
 			} else {
 				folder = Environment.getExternalStorageDirectory();
 			}
-			
+
 			File imageFile = new File(folder, "c2i_" + date.toString() + ".png");
 
 			FileOutputStream out = new FileOutputStream(imageFile);
@@ -113,14 +125,14 @@ public class Canvas2ImagePlugin extends CordovaPlugin {
 		}
 		return retVal;
 	}
-	
-	/* Invoke the system's media scanner to add your photo to the Media Provider's database, 
+
+	/* Invoke the system's media scanner to add your photo to the Media Provider's database,
 	 * making it available in the Android Gallery application and to other apps. */
 	private void scanPhoto(File imageFile)
 	{
 		Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
 	    Uri contentUri = Uri.fromFile(imageFile);
-	    mediaScanIntent.setData(contentUri);	      		  
+	    mediaScanIntent.setData(contentUri);
 	    cordova.getActivity().sendBroadcast(mediaScanIntent);
-	} 
+	}
 }
