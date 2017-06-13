@@ -54,7 +54,7 @@ public class Canvas2ImagePlugin extends CordovaPlugin {
 				callbackContext.error("The image could not be decoded");
 			} else {
 				// Save the image
-				savePhoto(bmp, fileName);
+				savePhoto(bmp, fileName, callbackContext);
 			}
 
 			return true;
@@ -63,10 +63,10 @@ public class Canvas2ImagePlugin extends CordovaPlugin {
 		}
 	}
 
-	private void savePhoto(Bitmap bmp, String fileName) {
+	private void savePhoto(Bitmap bmp, String fileName, CallbackContext callbackContext) {
 		if (PermissionHelper.hasPermission(this, WRITE_EXTERNAL_STORAGE)) {
         	Log.d("SaveImage", "Permissions already granted, or Android version is lower than 6");
-        	performSavePhoto(bmp, fileName);
+        	performSavePhoto(bmp, fileName, callbackContext);
         } else {
         	Log.d("SaveImage", "Requesting permissions for WRITE_EXTERNAL_STORAGE");
         	PermissionHelper.requestPermission(this, WRITE_PERM_REQUEST_CODE, WRITE_EXTERNAL_STORAGE);
