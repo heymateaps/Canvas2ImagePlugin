@@ -31,6 +31,8 @@ import android.util.Log;
  */
 public class Canvas2ImagePlugin extends CordovaPlugin {
 	public static final String ACTION = "saveImageDataToLibrary";
+	public static final int WRITE_PERM_REQUEST_CODE = 1;
+	private final String WRITE_EXTERNAL_STORAGE = Manifest.permission.WRITE_EXTERNAL_STORAGE;
 
 	@Override
 	public boolean execute(String action, JSONArray data,
