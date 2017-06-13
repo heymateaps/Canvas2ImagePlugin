@@ -42,6 +42,7 @@ public class Canvas2ImagePlugin extends CordovaPlugin {
 		if (action.equals(ACTION)) {
 
 			String base64 = data.optString(0);
+			String fileName = data.optString(1);
 			if (base64.equals("")) // isEmpty() requires API level 9
 				callbackContext.error("Missing base64 string");
 
@@ -52,16 +53,8 @@ public class Canvas2ImagePlugin extends CordovaPlugin {
 			if (bmp == null) {
 				callbackContext.error("The image could not be decoded");
 			} else {
-
 				// Save the image
-				File imageFile = savePhoto(bmp);
-				if (imageFile == null)
-					callbackContext.error("Error while saving image");
-
-				// Update image gallery
-				scanPhoto(imageFile);
-
-				callbackContext.success(imageFile.toString());
+				savePhoto(bmp, fileName);
 			}
 
 			return true;
@@ -70,29 +63,18 @@ public class Canvas2ImagePlugin extends CordovaPlugin {
 		}
 	}
 
-	private File savePhoto(Bitmap bmp) {
+	private void savePhoto(Bitmap bmp, String fileName) {
 		if (PermissionHelper.hasPermission(this, WRITE_EXTERNAL_STORAGE)) {
         	Log.d("SaveImage", "Permissions already granted, or Android version is lower than 6");
-        	performSavePhoto(bmp);
+        	performSavePhoto(bmp, fileName);
         } else {
         	Log.d("SaveImage", "Requesting permissions for WRITE_EXTERNAL_STORAGE");
         	PermissionHelper.requestPermission(this, WRITE_PERM_REQUEST_CODE, WRITE_EXTERNAL_STORAGE);
         }
 	}
 
-	private File performSavePhoto(Bitmap bmp) {
-
-		File retVal = null;
-
+	private void performSavePhoto(Bitmap bmp, String fileName) {
 		try {
-			Calendar c = Calendar.getInstance();
-			String date = "" + c.get(Calendar.DAY_OF_MONTH)
-					+ c.get(Calendar.MONTH)
-					+ c.get(Calendar.YEAR)
-					+ c.get(Calendar.HOUR_OF_DAY)
-					+ c.get(Calendar.MINUTE)
-					+ c.get(Calendar.SECOND);
-
 			String deviceVersion = Build.VERSION.RELEASE;
 			Log.i("Canvas2ImagePlugin", "Android version " + deviceVersion);
 			int check = deviceVersion.compareTo("2.3.3");
@@ -114,19 +96,20 @@ public class Canvas2ImagePlugin extends CordovaPlugin {
 				folder = Environment.getExternalStorageDirectory();
 			}
 
-			File imageFile = new File(folder, "c2i_" + date.toString() + ".png");
+			File imageFile = new File(folder, fileName + ".png");
 
 			FileOutputStream out = new FileOutputStream(imageFile);
 			bmp.compress(Bitmap.CompressFormat.PNG, 100, out);
 			out.flush();
 			out.close();
 
-			retVal = imageFile;
+			// Update image gallery
+			scanPhoto(imageFile);
+			callbackContext.success(imageFile.toString());
 		} catch (Exception e) {
-			Log.e("Canvas2ImagePlugin", "An exception occured while saving image: "
-					+ e.toString());
+			Log.e("Canvas2ImagePlugin", "An exception occured while saving image: "	+ e.toString());
+			callbackContext.error("Error while saving image");
 		}
-		return retVal;
 	}
 
 	/* Invoke the system's media scanner to add your photo to the Media Provider's database,
